@@ -55,7 +55,7 @@
         cap_secret: null,
         role_name: 'blog',
         zome_name: 'blog',
-        fn_name: 'get_original_post',
+        fn_name: 'get_latest_post',
         payload: postHash,
       })
       if (record) {
@@ -138,7 +138,7 @@
 
     <!-- Uncomment these components -->
 
-    <!-- <CreateComment {postHash} author={client.myPubKey} />
-    <CommentsForPost {postHash} /> -->
+    <CreateComment {postHash} author={client.myPubKey} />
+    <CommentsForPost {postHash} />
   </div>
 {/if}

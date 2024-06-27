@@ -33,7 +33,9 @@
     </div>
   {:else}
     <div id="content" style="display: flex; flex-direction: column; flex: 1;">
-      <!-- Add your CreatePost and AllPosts components here -->
+      <!-- Paste your CreatePost and AllPosts components here -->
+      <CreatePost author={client.myPubKey} />
+      <AllPosts />
     </div>
   {/if}
 </main>
