@@ -23,11 +23,16 @@ In this challenge we will learn how to manipulate links to achieve the following
 
 ## Retrieving entries within a collection
 
-In this project we are going to be developing a simple blogging app, where users can create blog posts, and comment on them.
+In this project we are going to be developing a simple blogging app, where users can create a blog posts, and comment on them.
 
 Notice how each of the Agent windows are empty.
 
-#### 1. Add two svelte components `CreatePost` and `AllPosts` to `ui/src/App.svelte`, save the file, and tab over into an Agent window
+#### 1. Copy and paste the following code into `ui/src/App.svelte`, save the file, and tab over into an Agent window
+
+```svelte
+    <CreatePost author={client.myPubKey} />
+    <AllPosts />
+```
 
 #### 2. Enter some text into each text field, and create a new post
 
@@ -37,7 +42,7 @@ However the creation of this post won't be reflected in the UI, and there will b
 
 Links will help us implement the retrieval of posts across agents to solve this issue.
 
-#### 3. Navigate to `dnas/blog/zomes/coordinator/blog/src/post.rs` and paste the following code inside the `create_post` function
+#### 5. Navigate to `dnas/blog/zomes/coordinator/blog/src/post.rs` and paste the following code inside the `create_post` function
 
 ```rust
     let path = Path::from("all_posts");
@@ -46,14 +51,14 @@ Links will help us implement the retrieval of posts across agents to solve this 
 
 The addition of these lines of code will create a link from an arbitrary 'point' on the DHT to the post. This point is called a collection and will help us retrieve all of the posts in the app from a single location.
 
-#### 4. Restart the Holochain app, and open the playground
+#### 6. Restart the Holochain app, and open the playground
 
 You should see a couple of things when you create a new post
 
 - As usual, the action and entry will appear in the agents source chain, but there will also be a new **createLink** action
-- Inside the dht-entries panel you will also see a link has been created that that points from the new collection (labled as **Unknown**). This link points to the Create Action, however as of Mid June 2024 this link points to another 'Unknown' point (This is a bug an will be fixed in a later version of the playground).
+- Inside the dht-entries panel you will also see a link has been created that points from the new collection (labled as **Unknown**) to the create action.
 
-#### 5. Navigate to `ui/src/blog/blog/AllPosts.svelte` and take a look at the `fetchPosts` function
+#### 7. Navigate to `ui/src/blog/blog/AllPosts.svelte` and take a look at the `fetchPosts` function
 
 You should notice a few things here.
 
@@ -63,7 +68,7 @@ You should notice a few things here.
 
 To get our posts rendering, we need to add the zome function do that.
 
-#### 6. Navigate to `dnas/blog/zomes/coordinator/blog/src/all_posts.rs` and paste following code
+#### 8. Navigate to `dnas/blog/zomes/coordinator/blog/src/all_posts.rs` and paste following code
 
 ```rust
 #[hdk_extern]
@@ -74,13 +79,13 @@ pub fn get_all_posts() -> ExternResult<Vec<Link>> {
 
 ```
 
-#### 7. Restart the Holochain app, and add a couple of new posts
+#### 9. Restart the Holochain app, and add a couple of new posts
 
 You will see that each one shows up in the UI!
 
 ## Retrieving the latest update of an entry
 
-#### 1. Update a post inside the UI
+#### 1. Update a post inside the UI and refresh the window
 
 You will notice that the updates are not reflected in the UI.
 
@@ -88,21 +93,35 @@ This makes sense, as our links coming from the collection point towards the crea
 
 #### 2. navigate to to `dnas/blog/zomes/coordinator/blog/src/post.rs`
 
-Find the update_post function and create a link of type `LinkTypes::PostUpdates`. It should point from the original post hash to the updated post hash.
+Find the update_post function and add the following code snippet
 
-#### 3. Navigate to `PostDetail.svelte`
+```rust
+create_link(
+    input.original_post_hash.clone(),
+    updated_post_hash.clone(),
+    LinkTypes::PostUpdates,
+    ()
+)?;
+```
+
+#### 3. Restart the app, create a post, and update it a couple of times
+
+Notice how inside the dht-entries panel, now two more links are displayed that point from the create action to the update action, but updates to posts are still not reflected in the UI.
+
+#### 4. Navigate to `PostDetail.svelte`
 
 Notice how the component takes in the post's hash as a prop, and makes a call to the zome function `get_original_post` inside the of `fetchPost` function.
 
-#### 4. Replace the name of the zome function to `get_latest_post`
+#### 5. Replace the name of the zome function to `get_latest_post`
 
-#### 5. Navigate to `post.rs`
+#### 6. Navigate to `post.rs`
 
-Notice how the original `get_original_post` zome function takes in the action hash, and returns the entry corresponding to it.
+Notice how the original `get_original_post` zome function takes in the action hash, and returns the entry
+corresponding to it.
 
 Instead of returning this entry, we want to loop over each link, pointing from this action hash, find the record whos entry's timestamp is the most recent, and return it's action.
 
-#### 6. Paste the following code
+#### 7. Paste the following code
 
 ```rust
 #[hdk_extern]
@@ -130,7 +149,7 @@ pub fn get_latest_post(original_post_hash: ActionHash) -> ExternResult<Option<Re
 }
 ```
 
-#### 7. Restart the holochain app
+#### 8. Restart the holochain app
 
 Now when you edit a post, the updated content displays correctly in the UI.
 
@@ -142,21 +161,25 @@ It won't properly work. When we delete an entry, we also need to remove all the 
 
 Unlike regular entries, links can be permanently removed from the DHT.
 
-#### 2. Inside the `delete_post` function of `post.rs` add code to delete the link
-
-The code should be simialr to the following structure:
+#### 2. Inside `post.rs`, add the following code inside the `delete_post` function
 
 ```rust
-// Retrieve all the links of type `LinkTypes::AllPosts`
-
-// Iterate over the links and convert them into action hashes using link.target.into_action_hash()
-
-// If the action hash == to original_post_hash, call delete_link(link.create_link_hash)?;
+    let path = Path::from("all_posts");
+    let links = get_links(
+        GetLinksInputBuilder::try_new(path.path_entry_hash()?, LinkTypes::AllPosts)?.build()
+    )?;
+    for link in links {
+        if let Some(hash) = link.target.into_action_hash() {
+            if hash == original_post_hash {
+                delete_link(link.create_link_hash)?;
+            }
+        }
+    }
 ```
 
 #### 3. Restart the holochain app
 
-Now when you delete posts, you won't be able to access them anymore
+Now when you delete posts, you won't able to access them anymore
 
 ## Retrieving entries that correspond to another entry (ie: Post/Comments)
 
@@ -168,16 +191,46 @@ Notice how a new record is added to the dht-entries panel and the agents source 
 
 To resolve this we need to do two things:
 
-- When creating a comment we also need to create a link from its post to it.
+- When creating a comment we also need to create a link from its post to itself.
 - We need to implement a zome function `get_comments_for_post`, which returns all the links pointing from the post action to each comment. This zome function is being called by `CommentsForPost.svelte`.
 
-#### 3. Inside the `create_comment function` of `comment.rs` add a line of code to create a link of `LinkTypes::PostToComments` from the post hash to the comment hash.
+#### 3. Implement comment creation and retrevial
 
-#### 4. Inside `comment.rs` add a zome function called `get_comments_for_post` it should return `ExternResult<Vec<Link>>`
+Try do it without using the hints!
 
-#### . Restart the app, create a comment and update it
+<details>
+<summary>
+Hint for creating the link
+</summary>
 
-Similarly to with updating posts, updating a comment will add a new action to the agents source chain. However, these changes will not be reflected in the agent's window UI.
+Add this block of code to the create_comment function inside `comment.rs`
+
+```rust
+    create_link(comment.post_hash.clone(), comment_hash.clone(), LinkTypes::PostToComments, ())?;
+```
+
+</details>
+
+<details>
+<summary>
+Hint for retrieving the links
+</summary>
+
+Add this zome function to `comment.rs`
+
+```rust
+#[hdk_extern]
+pub fn get_comments_for_post(post_hash: ActionHash) -> ExternResult<Vec<Link>> {
+    get_links(GetLinksInputBuilder::try_new(post_hash, LinkTypes::PostToComments)?.build())
+}
+
+```
+
+</details>
+
+#### 4. Restart the app, create a comment and update it
+
+Similarly to with updating posts, updating a comment will add a new action and its corresponding entry to the DHT. However once again, these changes will not be reflected in the agent's window UI.
 
 We could resolve this issue the same way we did with the posts; by creating a link from the create action to each new update action, however, there is another solution that we can use instead.
 
