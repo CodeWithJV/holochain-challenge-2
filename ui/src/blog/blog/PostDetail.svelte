@@ -56,7 +56,7 @@
         cap_secret: null,
         role_name: 'blog',
         zome_name: 'blog',
-        fn_name: 'get_original_post',
+        fn_name: 'get_latest_post',
         payload: postHash,
       })
       if (record) {
@@ -136,7 +136,7 @@
 
     <!-- Uncomment this section -->
 
-    <!-- {#if creatingComment}
+    {#if creatingComment}
       <CreateComment
         on:canceled={() => {
           creatingComment = false
@@ -157,7 +157,7 @@
           creatingComment = true
         }}
       ></mwc-button>
-    {/if} -->
+    {/if}
   </div>
   <hr style="width: 70%;" />
 {/if}
