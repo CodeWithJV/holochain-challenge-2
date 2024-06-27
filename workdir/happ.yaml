@@ -1,0 +1,18 @@
+---
+manifest_version: "1"
+name: c-2
+description: ~
+roles:
+  - name: blog
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "../dnas/blog/workdir/blog.dna"
+      modifiers:
+        network_seed: ~
+        properties: ~
+        origin_time: ~
+        quantum_time: ~
+      installed_hash: ~
+      clone_limit: 0

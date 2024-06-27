@@ -1,0 +1,7 @@
+---
+manifest_version: "1"
+name: c-2
+ui:
+  bundled: "../ui/dist.zip"
+happ_manifest:
+  bundled: "./c-2.happ"

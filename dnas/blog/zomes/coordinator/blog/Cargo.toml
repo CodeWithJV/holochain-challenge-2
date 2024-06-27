@@ -1,0 +1,15 @@
+[package]
+name = "blog"
+version = "0.0.1"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "blog"
+
+[dependencies]
+hdk = { workspace = true }
+
+serde = { workspace = true }
+
+blog_integrity = { workspace = true } 

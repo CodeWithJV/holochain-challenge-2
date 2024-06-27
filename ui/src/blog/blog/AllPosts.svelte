@@ -1,0 +1,64 @@
+<script lang="ts">
+  import { onMount, getContext } from 'svelte'
+  import '@material/mwc-circular-progress'
+  import type { Record, ActionHash, AppClient } from '@holochain/client'
+  import { clientContext } from '../../contexts'
+  import PostDetail from './PostDetail.svelte'
+  import type { BlogSignal } from './types'
+
+  let client: AppClient = (getContext(clientContext) as any).getClient()
+
+  let hashes: Array<ActionHash> | undefined
+  let loading = true
+  let error: any = undefined
+
+  $: hashes, loading, error
+
+  onMount(async () => {
+    await fetchPosts()
+    client.on('signal', (signal) => {
+      if (signal.zome_name !== 'blog') return
+      const payload = signal.payload as BlogSignal
+      if (payload.type !== 'EntryCreated') return
+      if (payload.app_entry.type !== 'Post') return
+      hashes = [...hashes, payload.action.hashed.hash]
+    })
+  })
+
+  async function fetchPosts() {
+    try {
+      const links = await client.callZome({
+        cap_secret: null,
+        role_name: 'blog',
+        zome_name: 'blog',
+        fn_name: 'get_all_posts',
+        payload: null,
+      })
+      hashes = links.map((l) => l.target)
+    } catch (e) {
+      error = e
+    }
+    loading = false
+  }
+</script>
+
+{#if loading}
+  <div
+    style="display: flex; flex: 1; align-items: center; justify-content: center"
+  >
+    <mwc-circular-progress indeterminate></mwc-circular-progress>
+  </div>
+{:else if error}
+  <span>Error fetching the posts: {error.data}.</span>
+{:else if hashes.length === 0}
+  <span>No posts found.</span>
+{:else}
+  <div style="display: flex; flex-direction: column">
+    {#each hashes as hash}
+      <div style="margin-bottom: 8px;">
+        <PostDetail postHash={hash} on:post-deleted={() => fetchPosts()}
+        ></PostDetail>
+      </div>
+    {/each}
+  </div>
+{/if}
