@@ -53,7 +53,7 @@
         cap_secret: null,
         role_name: 'blog',
         zome_name: 'blog',
-        fn_name: 'get_original_comment',
+        fn_name: 'get_latest_comment',
         payload: commentHash,
       })
       if (record) {
@@ -110,7 +110,9 @@
       style="display: flex; flex-direction: row; align-items: center; flex: 1;"
     >
       <span style="margin-right: 4px"><strong>Comment:</strong></span>
-      <span style="white-space: pre-line">{comment?.content}</span>
+      <span style="white-space: pre-line; text-align: start;"
+        >{comment?.content}</span
+      >
     </div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div style="display: flex; flex-direction: row">
