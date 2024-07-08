@@ -26,7 +26,7 @@
 </script>
 
 <Banner challengeNumber={2} challengeName="Links & Collections">
-  <main>
+  <div style="max-width: 600px; margin: 0 auto; height: 100%;">
     {#if loading}
       <div
         style="display: flex; flex: 1; align-items: center; justify-content: center"
@@ -34,24 +34,12 @@
         <mwc-circular-progress indeterminate />
       </div>
     {:else}
-      <div id="content" style="display: flex; flex-direction: column; flex: 1;">
+      <div
+        id="content"
+        style="display: flex; flex-direction: column; flex: 1; justify-content: center; align-items: center; height: 100%; padding-bottom: 80px; box-sizing: border-box;"
+      >
         <!-- Add your CreatePost and AllPosts components here -->
       </div>
     {/if}
-  </main>
+  </div>
 </Banner>
-
-<style>
-  main {
-    text-align: center;
-    padding: 1em;
-    max-width: 240px;
-    margin: 0 auto;
-  }
-
-  @media (min-width: 640px) {
-    main {
-      max-width: none;
-    }
-  }
-</style>
