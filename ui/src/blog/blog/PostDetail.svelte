@@ -27,6 +27,7 @@
   let client: AppClient = (getContext(clientContext) as any).getClient()
 
   let loading: boolean
+  let creatingComment: boolean
   let error: any = undefined
 
   let record: Record | undefined
@@ -36,7 +37,7 @@
 
   let errorSnackbar: Snackbar
 
-  $: editing, error, loading, record, post
+  $: editing, error, loading, record, post, creatingComment
 
   onMount(async () => {
     if (postHash === undefined) {
@@ -104,11 +105,11 @@
     }}
   ></EditPost>
 {:else}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div style="display: flex; flex-direction: column; width: 100%;">
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div style="display: flex; flex-direction: row; width: 100%;">
       <div
-        style="display: flex; flex-direction: row; margin-bottom: 16px; flex: 1; align-items: center;"
+        style="display: flex; flex-direction: row; flex: 1; align-items: center;"
       >
         <span style="margin-right: 4px"><strong>Name:</strong></span>
         <span style="white-space: pre-line">{post?.name}</span>
@@ -133,10 +134,29 @@
       >
     </div>
 
-    <!-- Uncomment these components -->
-
-    <!-- <CreateComment {postHash} author={client.myPubKey} />
-    <CommentsForPost {postHash} /> -->
+    <!-- Uncomment this section -->
+    <!-- {#if creatingComment}
+      <CreateComment
+        on:canceled={() => {
+          creatingComment = false
+        }}
+        on:comment-created={() => {
+          creatingComment = false
+        }}
+        {postHash}
+        author={client.myPubKey}
+      />
+    {:else}
+      <CommentsForPost {postHash} />
+      <mwc-button
+        dense
+        outlined
+        label="Create Comment"
+        on:click={() => {
+          creatingComment = true
+        }}
+      ></mwc-button>
+    {/if} -->
   </div>
   <hr style="width: 70%;" />
 {/if}

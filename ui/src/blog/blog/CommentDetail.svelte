@@ -105,10 +105,15 @@
     }}
   ></EditComment>
 {:else}
-  <div style="display: flex; flex-direction: column">
+  <div style="display: flex; flex-direction: row">
+    <div
+      style="display: flex; flex-direction: row; align-items: center; flex: 1;"
+    >
+      <span style="margin-right: 4px"><strong>Comment:</strong></span>
+      <span style="white-space: pre-line">{comment?.content}</span>
+    </div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div style="display: flex; flex-direction: row">
-      <span style="flex: 1"></span>
       <mwc-icon-button
         style="margin-left: 8px"
         icon="edit"
@@ -121,10 +126,6 @@
         icon="delete"
         on:click={() => deleteComment()}
       ></mwc-icon-button>
-    </div>
-    <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-      <span style="margin-right: 4px"><strong>Content:</strong></span>
-      <span style="white-space: pre-line">{comment?.content}</span>
     </div>
   </div>
 {/if}

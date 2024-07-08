@@ -85,10 +85,21 @@
   ></mwc-textarea>
 
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <mwc-button
-    raised
-    label="Create Comment"
-    disabled={!isCommentValid}
-    on:click={() => createComment()}
-  ></mwc-button>
+  <div style="display: flex; flex: row; gap: 8px;">
+    <mwc-button
+      style="flex: 1;"
+      outlined
+      label="Cancel"
+      on:click={() => {
+        dispatch('canceled')
+      }}
+    ></mwc-button>
+    <mwc-button
+      raised
+      style="flex: 1;"
+      label="Create Comment"
+      disabled={!isCommentValid}
+      on:click={() => createComment()}
+    ></mwc-button>
+  </div>
 </div>

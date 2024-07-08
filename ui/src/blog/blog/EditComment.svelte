@@ -71,10 +71,13 @@
 
 <mwc-snackbar bind:this={errorSnackbar} leading> </mwc-snackbar>
 <div style="display: flex; flex-direction: column">
-  <span style="font-size: 18px">Edit Comment</span>
+  <span style="font-size: 18px; margin-bottom: 16px;"
+    ><strong>Edit Comment</strong></span
+  >
 
   <div style="margin-bottom: 16px">
     <mwc-textarea
+      style="width: 100%;"
       outlined
       label="Content"
       value={content}
