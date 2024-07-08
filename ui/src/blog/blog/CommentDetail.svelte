@@ -92,7 +92,7 @@
     <mwc-circular-progress indeterminate></mwc-circular-progress>
   </div>
 {:else if error}
-  <span>Error fetching the comment: {error.data}</span>
+  <span>Error fetching the comment: {error}</span>
 {:else if editing}
   <EditComment
     currentRecord={record}

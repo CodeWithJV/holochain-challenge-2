@@ -73,7 +73,7 @@
     <mwc-circular-progress indeterminate></mwc-circular-progress>
   </div>
 {:else if error}
-  <span>Error fetching comments: ${error.data}.</span>
+  <span>Error fetching comments: ${error}.</span>
 {:else if hashes.length === 0}
   <span>No comments found for this post.</span>
 {:else}
