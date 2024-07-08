@@ -39,6 +39,8 @@
         style="display: flex; flex-direction: column; flex: 1; justify-content: center; align-items: center; height: 100%; padding-bottom: 80px; box-sizing: border-box;"
       >
         <!-- Add your CreatePost and AllPosts components here -->
+        <CreatePost author={client.myPubKey} />
+        <AllPosts />
       </div>
     {/if}
   </div>
