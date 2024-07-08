@@ -74,8 +74,6 @@
   </div>
 {:else if error}
   <span>Error fetching comments: ${error}.</span>
-{:else if hashes.length === 0}
-  <span>No comments found for this post.</span>
 {:else}
   <div style="display: flex; flex-direction: column">
     {#each hashes as hash}
