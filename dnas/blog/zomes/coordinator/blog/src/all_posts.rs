@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use blog_integrity::*;
 
-// Add your zome function here!
+// Paste your zome function here!
 // ...
 #[hdk_extern]
 pub fn get_all_posts() -> ExternResult<Vec<Link>> {

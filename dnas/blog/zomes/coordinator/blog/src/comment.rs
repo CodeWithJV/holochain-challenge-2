@@ -4,6 +4,7 @@ use blog_integrity::*;
 #[hdk_extern]
 pub fn create_comment(comment: Comment) -> ExternResult<Record> {
     let comment_hash = create_entry(&EntryTypes::Comment(comment.clone()))?;
+    create_link(comment.post_hash.clone(), comment_hash.clone(), LinkTypes::PostToComments, ())?;
     let record = get(comment_hash.clone(), GetOptions::default())?.ok_or(
         wasm_error!(WasmErrorInner::Guest("Could not find the newly created Comment".to_string()))
     )?;
@@ -28,21 +29,6 @@ pub fn get_comments_for_post(post_hash: ActionHash) -> ExternResult<Vec<Link>> {
     get_links(GetLinksInputBuilder::try_new(post_hash, LinkTypes::PostToComments)?.build())
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct UpdateCommentInput {
-    pub previous_comment_hash: ActionHash,
-    pub updated_comment: Comment,
-}
-
-#[hdk_extern]
-pub fn update_comment(input: UpdateCommentInput) -> ExternResult<Record> {
-    let updated_comment_hash = update_entry(input.previous_comment_hash, &input.updated_comment)?;
-    let record = get(updated_comment_hash.clone(), GetOptions::default())?.ok_or(
-        wasm_error!(WasmErrorInner::Guest("Could not find the newly updated Comment".to_string()))
-    )?;
-    Ok(record)
-}
-
 #[hdk_extern]
 pub fn get_latest_comment(original_comment_hash: ActionHash) -> ExternResult<Option<Record>> {
     let Some(details) = get_details(original_comment_hash, GetOptions::default())? else {
@@ -56,6 +42,20 @@ pub fn get_latest_comment(original_comment_hash: ActionHash) -> ExternResult<Opt
         Some(update) => get_latest_comment(update.action_address().clone()),
         None => Ok(Some(record_details.record)),
     }
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UpdateCommentInput {
+    pub previous_comment_hash: ActionHash,
+    pub updated_comment: Comment,
+}
+
+#[hdk_extern]
+pub fn update_comment(input: UpdateCommentInput) -> ExternResult<Record> {
+    let updated_comment_hash = update_entry(input.previous_comment_hash, &input.updated_comment)?;
+    let record = get(updated_comment_hash.clone(), GetOptions::default())?.ok_or(
+        wasm_error!(WasmErrorInner::Guest("Could not find the newly updated Comment".to_string()))
+    )?;
+    Ok(record)
 }
 
 #[hdk_extern]

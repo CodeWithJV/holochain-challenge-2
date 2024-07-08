@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use blog_integrity::*;
 
-// Add your zome functions here
+// Paste your zome functions here
 // ...
 
 #[hdk_extern]
@@ -11,11 +11,10 @@ pub fn create_post(post: Post) -> ExternResult<Record> {
         wasm_error!(WasmErrorInner::Guest("Could not find the newly created Post".to_string()))
     )?;
 
-    // Add your Link creation code here!
+    // Paste your Link creation code here!
     // ...
     let path = Path::from("all_posts");
     create_link(path.path_entry_hash()?, post_hash.clone(), LinkTypes::AllPosts, ())?;
-
     Ok(record)
 }
 
@@ -42,7 +41,7 @@ pub struct UpdatePostInput {
 pub fn update_post(input: UpdatePostInput) -> ExternResult<Record> {
     let updated_post_hash = update_entry(input.previous_post_hash.clone(), &input.updated_post)?;
 
-    // Add your link creation code here
+    // Paste your link creation code here
     // ...
     create_link(
         input.original_post_hash.clone(),
@@ -83,7 +82,7 @@ pub fn get_latest_post(original_post_hash: ActionHash) -> ExternResult<Option<Re
 
 #[hdk_extern]
 pub fn delete_post(original_post_hash: ActionHash) -> ExternResult<ActionHash> {
-    // Add your Link deletion code here
+    // Add Link deletion code here
     // ...
     let path = Path::from("all_posts");
     let links = get_links(
