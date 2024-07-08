@@ -53,6 +53,9 @@
   <span>No posts found.</span>
 {:else}
   <div style="display: flex; flex-direction: column; width: 100%;">
+    <span style="margin-top: 16px; font-size: 18px;"
+      ><strong>Posts</strong></span
+    >
     {#each hashes as hash}
       <div style="margin-bottom: 8px;">
         <PostDetail postHash={hash} on:post-deleted={() => fetchPosts()}
