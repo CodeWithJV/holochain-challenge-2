@@ -77,7 +77,7 @@
       })
       dispatch('comment-deleted', { commentHash: commentHash })
     } catch (e: any) {
-      errorSnackbar.labelText = `Error deleting the comment: ${e.data}`
+      errorSnackbar.labelText = `Error deleting the comment: ${e}`
       errorSnackbar.show()
     }
   }

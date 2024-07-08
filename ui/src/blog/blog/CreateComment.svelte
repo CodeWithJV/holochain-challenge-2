@@ -62,7 +62,7 @@
         commentHash: record.signed_action.hashed.hash,
       })
     } catch (e) {
-      errorSnackbar.labelText = `Error creating the comment: ${e.data}`
+      errorSnackbar.labelText = `Error creating the comment: ${e}`
       errorSnackbar.show()
     }
   }

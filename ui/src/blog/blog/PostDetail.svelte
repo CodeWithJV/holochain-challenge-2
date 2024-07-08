@@ -79,7 +79,7 @@
       })
       dispatch('post-deleted', { postHash: postHash })
     } catch (e: any) {
-      errorSnackbar.labelText = `Error deleting the post: ${e.data}`
+      errorSnackbar.labelText = `Error deleting the post: ${e}`
       errorSnackbar.show()
     }
   }

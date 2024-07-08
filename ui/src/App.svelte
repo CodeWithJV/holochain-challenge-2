@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Banner from './Banner.svelte'
   import { onMount, setContext } from 'svelte'
   import type { ActionHash, AppClient } from '@holochain/client'
   import { AppWebsocket } from '@holochain/client'
@@ -24,19 +25,21 @@
   })
 </script>
 
-<main>
-  {#if loading}
-    <div
-      style="display: flex; flex: 1; align-items: center; justify-content: center"
-    >
-      <mwc-circular-progress indeterminate />
-    </div>
-  {:else}
-    <div id="content" style="display: flex; flex-direction: column; flex: 1;">
-      <!-- Add your CreatePost and AllPosts components here -->
-    </div>
-  {/if}
-</main>
+<Banner challengeNumber={2} challengeName="Links & Collections">
+  <main>
+    {#if loading}
+      <div
+        style="display: flex; flex: 1; align-items: center; justify-content: center"
+      >
+        <mwc-circular-progress indeterminate />
+      </div>
+    {:else}
+      <div id="content" style="display: flex; flex-direction: column; flex: 1;">
+        <!-- Add your CreatePost and AllPosts components here -->
+      </div>
+    {/if}
+  </main>
+</Banner>
 
 <style>
   main {

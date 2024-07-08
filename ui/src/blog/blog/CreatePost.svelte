@@ -46,7 +46,7 @@
       })
       dispatch('post-created', { postHash: record.signed_action.hashed.hash })
     } catch (e) {
-      errorSnackbar.labelText = `Error creating the post: ${e.data}`
+      errorSnackbar.labelText = `Error creating the post: ${e}`
       errorSnackbar.show()
     }
   }

@@ -63,7 +63,7 @@
         actionHash: updateRecord.signed_action.hashed.hash,
       })
     } catch (e) {
-      errorSnackbar.labelText = `Error updating the comment: ${e.data}`
+      errorSnackbar.labelText = `Error updating the comment: ${e}`
       errorSnackbar.show()
     }
   }
