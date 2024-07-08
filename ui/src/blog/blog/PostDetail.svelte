@@ -88,11 +88,7 @@
 <mwc-snackbar bind:this={errorSnackbar} leading> </mwc-snackbar>
 
 {#if loading}
-  <div
-    style="display: flex; flex: 1; align-items: center; justify-content: center"
-  >
-    <mwc-circular-progress indeterminate></mwc-circular-progress>
-  </div>
+  <mwc-circular-progress indeterminate></mwc-circular-progress>
 {:else if error}
   <span>Error fetching the post: {error}</span>
 {:else if editing}
@@ -108,10 +104,15 @@
     }}
   ></EditPost>
 {:else}
-  <div style="display: flex; flex-direction: column">
+  <div style="display: flex; flex-direction: column; width: 100%;">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div style="display: flex; flex-direction: row">
-      <span style="flex: 1"></span>
+    <div style="display: flex; flex-direction: row; width: 100%;">
+      <div
+        style="display: flex; flex-direction: row; margin-bottom: 16px; flex: 1; align-items: center;"
+      >
+        <span style="margin-right: 4px"><strong>Name:</strong></span>
+        <span style="white-space: pre-line">{post?.name}</span>
+      </div>
       <mwc-icon-button
         style="margin-left: 8px"
         icon="edit"
@@ -127,13 +128,9 @@
     </div>
 
     <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-      <span style="margin-right: 4px"><strong>Name:</strong></span>
-      <span style="white-space: pre-line">{post?.name}</span>
-    </div>
-
-    <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-      <span style="margin-right: 4px"><strong>Content:</strong></span>
-      <span style="white-space: pre-line">{post?.content}</span>
+      <span style="white-space: pre-line; text-align: start;"
+        >{post?.content}</span
+      >
     </div>
 
     <!-- Uncomment these components -->
@@ -141,4 +138,5 @@
     <!-- <CreateComment {postHash} author={client.myPubKey} />
     <CommentsForPost {postHash} /> -->
   </div>
+  <hr style="width: 70%;" />
 {/if}
