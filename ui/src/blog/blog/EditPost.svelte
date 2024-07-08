@@ -80,32 +80,30 @@
 </script>
 
 <mwc-snackbar bind:this={errorSnackbar} leading> </mwc-snackbar>
-<div style="display: flex; flex-direction: column">
-  <span style="font-size: 18px">Edit Post</span>
+<div
+  style="display: flex; flex-direction: column; gap: 16px; box-sizing: border-box; margin: 16px 0;"
+>
+  <span style="font-size: 18px; "><strong>Edit Post</strong></span>
 
-  <div style="margin-bottom: 16px">
-    <mwc-textfield
-      outlined
-      label="Name"
-      value={name}
-      on:input={(e) => {
-        name = e.target.value
-      }}
-      required
-    ></mwc-textfield>
-  </div>
+  <mwc-textfield
+    outlined
+    label="Name"
+    value={name}
+    on:input={(e) => {
+      name = e.target.value
+    }}
+    required
+  ></mwc-textfield>
 
-  <div style="margin-bottom: 16px">
-    <mwc-textarea
-      outlined
-      label="Content"
-      value={content}
-      on:input={(e) => {
-        content = e.target.value
-      }}
-      required
-    ></mwc-textarea>
-  </div>
+  <mwc-textarea
+    outlined
+    label="Content"
+    value={content}
+    on:input={(e) => {
+      content = e.target.value
+    }}
+    required
+  ></mwc-textarea>
 
   <!-- svelte-ignore a11y-click-events-have-key-events -->
 
