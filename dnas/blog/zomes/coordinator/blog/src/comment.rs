@@ -8,7 +8,6 @@ pub fn create_comment(comment: Comment) -> ExternResult<Record> {
     let record = get(comment_hash.clone(), GetOptions::default())?.ok_or(
         wasm_error!(WasmErrorInner::Guest("Could not find the newly created Comment".to_string()))
     )?;
-    create_link(comment.post_hash.clone(), comment_hash.clone(), LinkTypes::PostToComments, ())?;
     Ok(record)
 }
 
@@ -29,20 +28,6 @@ pub fn get_comments_for_post(post_hash: ActionHash) -> ExternResult<Vec<Link>> {
     get_links(GetLinksInputBuilder::try_new(post_hash, LinkTypes::PostToComments)?.build())
 }
 
-#[hdk_extern]
-pub fn get_latest_comment(original_comment_hash: ActionHash) -> ExternResult<Option<Record>> {
-    let Some(details) = get_details(original_comment_hash, GetOptions::default())? else {
-        return Ok(None);
-    };
-    let record_details = (match details {
-        Details::Entry(_) => { Err(wasm_error!(WasmErrorInner::Guest("Malformed details".into()))) }
-        Details::Record(record_details) => Ok(record_details),
-    })?;
-    match record_details.updates.last() {
-        Some(update) => get_latest_comment(update.action_address().clone()),
-        None => Ok(Some(record_details.record)),
-    }
-}
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateCommentInput {
     pub previous_comment_hash: ActionHash,
