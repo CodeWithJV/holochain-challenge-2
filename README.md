@@ -183,7 +183,7 @@ Now when you delete posts, you won't able to access them anymore
 
 ## Retrieving entries that correspond to another entry (ie: Post/Comments)
 
-#### 1. Start by uncommenting the `CreateComment` and `CommentsForPost` components implemented near the bottom of `PostDetail.svelte`
+#### 1. Start by uncommenting the comment-section code found near the bottom of the `PostDetail.svelte` component
 
 #### 2. Create a comment.
 
