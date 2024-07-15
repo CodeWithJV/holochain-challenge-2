@@ -49,14 +49,14 @@ Links will help us implement the retrieval of posts across agents to solve this 
     create_link(path.path_entry_hash()?, post_hash.clone(), LinkTypes::AllPosts, ())?;
 ```
 
-The addition of these lines of code will create a link from an arbitrary 'point' on the DHT to the post. This point is called a collection and will help us retrieve all of the posts in the app from a single location.
+The addition of these lines of code will create a link from an arbitrary 'point' on the DHT to the post. This point is called an anchor, and will help us retrieve all of the posts in the app from a single location.
 
 #### 6. Restart the Holochain app, and open the playground
 
 You should see a couple of things when you create a new post
 
 - As usual, the action and entry will appear in the agents source chain, but there will also be a new **createLink** action
-- Inside the dht-entries panel you will also see a link has been created that points from the new collection (labled as **Unknown**) to the create action.
+- Inside the dht-entries panel you will also see a link has been created that points from the new anchor (labled as **Unknown**) to the create action.
 
 #### 7. Navigate to `ui/src/blog/blog/AllPosts.svelte` and take a look at the `fetchPosts` function
 
@@ -89,7 +89,7 @@ You will see that each one shows up in the UI!
 
 You will notice that the updates are not reflected in the UI.
 
-This makes sense, as our links coming from the collection point towards the create action, and not the update action.
+This makes sense, as our links coming from the anchor point towards the create action, and not the update action.
 
 #### 2. navigate to to `dnas/blog/zomes/coordinator/blog/src/post.rs`
 
