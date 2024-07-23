@@ -15,7 +15,10 @@
   $: hashes, loading, error
 
   onMount(async () => {
-    await fetchPosts()
+    // Delay by a bit to allow backend to bootup
+    setTimeout(async () => {
+      await fetchPosts()
+    }, 300)
     client.on('signal', (signal) => {
       if (signal.zome_name !== 'blog') return
       const payload = signal.payload as BlogSignal
@@ -43,17 +46,16 @@
 </script>
 
 {#if loading}
-  <div
-    style="display: flex; flex: 1; align-items: center; justify-content: center"
-  >
-    <mwc-circular-progress indeterminate></mwc-circular-progress>
-  </div>
+  <mwc-circular-progress indeterminate></mwc-circular-progress>
 {:else if error}
-  <span>Error fetching the posts: {error.data}.</span>
+  <span>Error fetching the posts: {error}.</span>
 {:else if hashes.length === 0}
   <span>No posts found.</span>
 {:else}
-  <div style="display: flex; flex-direction: column">
+  <div style="display: flex; flex-direction: column; width: 100%;">
+    <span style="margin-top: 16px; font-size: 18px;"
+      ><strong>Posts</strong></span
+    >
     {#each hashes as hash}
       <div style="margin-bottom: 8px;">
         <PostDetail postHash={hash} on:post-deleted={() => fetchPosts()}

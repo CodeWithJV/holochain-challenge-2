@@ -5,30 +5,6 @@ use blog_integrity::*;
 // ...
 
 #[hdk_extern]
-pub fn get_latest_post(original_post_hash: ActionHash) -> ExternResult<Option<Record>> {
-    let links = get_links(
-        GetLinksInputBuilder::try_new(original_post_hash.clone(), LinkTypes::PostUpdates)?.build()
-    )?;
-    let latest_link = links
-        .into_iter()
-        .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
-    let latest_post_hash = match latest_link {
-        Some(link) => {
-            link.target
-                .clone()
-                .into_action_hash()
-                .ok_or(
-                    wasm_error!(
-                        WasmErrorInner::Guest("No action hash associated with link".to_string())
-                    )
-                )?
-        }
-        None => original_post_hash.clone(),
-    };
-    get(latest_post_hash, GetOptions::default())
-}
-
-#[hdk_extern]
 pub fn create_post(post: Post) -> ExternResult<Record> {
     let post_hash = create_entry(&EntryTypes::Post(post.clone()))?;
     let record = get(post_hash.clone(), GetOptions::default())?.ok_or(
@@ -39,6 +15,7 @@ pub fn create_post(post: Post) -> ExternResult<Record> {
     // ...
     let path = Path::from("all_posts");
     create_link(path.path_entry_hash()?, post_hash.clone(), LinkTypes::AllPosts, ())?;
+
     Ok(record)
 }
 
@@ -78,6 +55,30 @@ pub fn update_post(input: UpdatePostInput) -> ExternResult<Record> {
         wasm_error!(WasmErrorInner::Guest("Could not find the newly updated Post".to_string()))
     )?;
     Ok(record)
+}
+
+#[hdk_extern]
+pub fn get_latest_post(original_post_hash: ActionHash) -> ExternResult<Option<Record>> {
+    let links = get_links(
+        GetLinksInputBuilder::try_new(original_post_hash.clone(), LinkTypes::PostUpdates)?.build()
+    )?;
+    let latest_link = links
+        .into_iter()
+        .max_by(|link_a, link_b| link_a.timestamp.cmp(&link_b.timestamp));
+    let latest_post_hash = match latest_link {
+        Some(link) => {
+            link.target
+                .clone()
+                .into_action_hash()
+                .ok_or(
+                    wasm_error!(
+                        WasmErrorInner::Guest("No action hash associated with link".to_string())
+                    )
+                )?
+        }
+        None => original_post_hash.clone(),
+    };
+    get(latest_post_hash, GetOptions::default())
 }
 
 #[hdk_extern]

@@ -27,6 +27,7 @@
   let client: AppClient = (getContext(clientContext) as any).getClient()
 
   let loading: boolean
+  let creatingComment: boolean
   let error: any = undefined
 
   let record: Record | undefined
@@ -36,7 +37,7 @@
 
   let errorSnackbar: Snackbar
 
-  $: editing, error, loading, record, post
+  $: editing, error, loading, record, post, creatingComment
 
   onMount(async () => {
     if (postHash === undefined) {
@@ -79,7 +80,7 @@
       })
       dispatch('post-deleted', { postHash: postHash })
     } catch (e: any) {
-      errorSnackbar.labelText = `Error deleting the post: ${e.data}`
+      errorSnackbar.labelText = `Error deleting the post: ${e}`
       errorSnackbar.show()
     }
   }
@@ -88,13 +89,9 @@
 <mwc-snackbar bind:this={errorSnackbar} leading> </mwc-snackbar>
 
 {#if loading}
-  <div
-    style="display: flex; flex: 1; align-items: center; justify-content: center"
-  >
-    <mwc-circular-progress indeterminate></mwc-circular-progress>
-  </div>
+  <mwc-circular-progress indeterminate></mwc-circular-progress>
 {:else if error}
-  <span>Error fetching the post: {error.data}</span>
+  <span>Error fetching the post: {error}</span>
 {:else if editing}
   <EditPost
     originalPostHash={postHash}
@@ -108,10 +105,15 @@
     }}
   ></EditPost>
 {:else}
-  <div style="display: flex; flex-direction: column">
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div style="display: flex; flex-direction: row">
-      <span style="flex: 1"></span>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div style="display: flex; flex-direction: column; width: 100%;">
+    <div style="display: flex; flex-direction: row; width: 100%;">
+      <div
+        style="display: flex; flex-direction: row; flex: 1; align-items: center;"
+      >
+        <span style="margin-right: 4px"><strong>Name:</strong></span>
+        <span style="white-space: pre-line">{post?.name}</span>
+      </div>
       <mwc-icon-button
         style="margin-left: 8px"
         icon="edit"
@@ -127,18 +129,35 @@
     </div>
 
     <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-      <span style="margin-right: 4px"><strong>Name:</strong></span>
-      <span style="white-space: pre-line">{post?.name}</span>
+      <span style="white-space: pre-line; text-align: start;"
+        >{post?.content}</span
+      >
     </div>
 
-    <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-      <span style="margin-right: 4px"><strong>Content:</strong></span>
-      <span style="white-space: pre-line">{post?.content}</span>
-    </div>
+    <!-- Uncomment this section -->
 
-    <!-- Uncomment these components -->
-
-    <CreateComment {postHash} author={client.myPubKey} />
-    <CommentsForPost {postHash} />
+    {#if creatingComment}
+      <CreateComment
+        on:canceled={() => {
+          creatingComment = false
+        }}
+        on:comment-created={() => {
+          creatingComment = false
+        }}
+        {postHash}
+        author={client.myPubKey}
+      />
+    {:else}
+      <CommentsForPost {postHash} />
+      <mwc-button
+        dense
+        outlined
+        label="Create Comment"
+        on:click={() => {
+          creatingComment = true
+        }}
+      ></mwc-button>
+    {/if}
   </div>
+  <hr style="width: 70%;" />
 {/if}

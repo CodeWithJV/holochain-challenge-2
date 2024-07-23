@@ -46,39 +46,37 @@
       })
       dispatch('post-created', { postHash: record.signed_action.hashed.hash })
     } catch (e) {
-      errorSnackbar.labelText = `Error creating the post: ${e.data}`
+      errorSnackbar.labelText = `Error creating the post: ${e}`
       errorSnackbar.show()
     }
   }
 </script>
 
 <mwc-snackbar bind:this={errorSnackbar} leading> </mwc-snackbar>
-<div style="display: flex; flex-direction: column">
-  <span style="font-size: 18px">Create Post</span>
+<div
+  style="display: flex; flex-direction: column; gap: 16px; width: 100%; margin-bottom: 16px;"
+>
+  <span style="font-size: 18px"><strong>Create Post</strong></span>
 
-  <div style="margin-bottom: 16px">
-    <mwc-textfield
-      outlined
-      label="Name"
-      value={name}
-      on:input={(e) => {
-        name = e.target.value
-      }}
-      required
-    ></mwc-textfield>
-  </div>
+  <mwc-textfield
+    outlined
+    label="Name"
+    value={name}
+    on:input={(e) => {
+      name = e.target.value
+    }}
+    required
+  ></mwc-textfield>
 
-  <div style="margin-bottom: 16px">
-    <mwc-textarea
-      outlined
-      label="Content"
-      value={content}
-      on:input={(e) => {
-        content = e.target.value
-      }}
-      required
-    ></mwc-textarea>
-  </div>
+  <mwc-textarea
+    outlined
+    label="Content"
+    value={content}
+    on:input={(e) => {
+      content = e.target.value
+    }}
+    required
+  ></mwc-textarea>
 
   <!-- svelte-ignore a11y-click-events-have-key-events -->
 

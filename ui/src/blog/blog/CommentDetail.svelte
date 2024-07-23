@@ -77,7 +77,7 @@
       })
       dispatch('comment-deleted', { commentHash: commentHash })
     } catch (e: any) {
-      errorSnackbar.labelText = `Error deleting the comment: ${e.data}`
+      errorSnackbar.labelText = `Error deleting the comment: ${e}`
       errorSnackbar.show()
     }
   }
@@ -92,7 +92,7 @@
     <mwc-circular-progress indeterminate></mwc-circular-progress>
   </div>
 {:else if error}
-  <span>Error fetching the comment: {error.data}</span>
+  <span>Error fetching the comment: {error}</span>
 {:else if editing}
   <EditComment
     currentRecord={record}
@@ -105,10 +105,17 @@
     }}
   ></EditComment>
 {:else}
-  <div style="display: flex; flex-direction: column">
+  <div style="display: flex; flex-direction: row">
+    <div
+      style="display: flex; flex-direction: row; align-items: center; flex: 1;"
+    >
+      <span style="margin-right: 4px"><strong>Comment:</strong></span>
+      <span style="white-space: pre-line; text-align: start;"
+        >{comment?.content}</span
+      >
+    </div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div style="display: flex; flex-direction: row">
-      <span style="flex: 1"></span>
       <mwc-icon-button
         style="margin-left: 8px"
         icon="edit"
@@ -121,10 +128,6 @@
         icon="delete"
         on:click={() => deleteComment()}
       ></mwc-icon-button>
-    </div>
-    <div style="display: flex; flex-direction: row; margin-bottom: 16px">
-      <span style="margin-right: 4px"><strong>Content:</strong></span>
-      <span style="white-space: pre-line">{comment?.content}</span>
     </div>
   </div>
 {/if}
