@@ -8,7 +8,7 @@
     "package": "npm run build && rimraf dist.zip && cd dist && bestzip ../dist.zip *"
   },
   "dependencies": {
-    "@holochain/client": "^0.17.0-rc.0",
+    "@holochain/client": "^0.17.1",
     "@material/mwc-circular-progress": "^0.27.0",
     "@material/mwc-button": "^0.27.0",
     "@material/mwc-textfield": "^0.27.0",
