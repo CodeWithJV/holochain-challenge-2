@@ -288,7 +288,7 @@ Ultimately the choice of how to retrieve updated entries is up to you and this c
 
 #### 5. Restart the app, create a comment, and update it.
 
-#### 8. Make comments deletable
+#### 6. Make comments deletable
 
 To delete a comment, paste the following zome function inside `dnas/blog/zomes/coordinator/blog/src/comment.rs`
 
