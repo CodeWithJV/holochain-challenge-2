@@ -26,6 +26,11 @@ pub fn get_original_comment(original_comment_hash: ActionHash) -> ExternResult<O
 
 //add get_latest_comment here
 
+// delete_comment here
+
+// add get_comments_for_post here
+
+
 #[hdk_extern]
 pub fn get_all_revisions_for_comment(
     original_comment_hash: ActionHash,
@@ -57,8 +62,6 @@ pub fn update_comment(input: UpdateCommentInput) -> ExternResult<Record> {
     Ok(record)
 }
 
-// delete_comment here
-
 #[hdk_extern]
 pub fn get_all_deletes_for_comment(
     original_comment_hash: ActionHash,
@@ -89,8 +92,6 @@ pub fn get_oldest_delete_for_comment(
     });
     Ok(deletes.first().cloned())
 }
-
-// add get_comments_for_post here
 
 #[hdk_extern]
 pub fn get_deleted_comments_for_post(
