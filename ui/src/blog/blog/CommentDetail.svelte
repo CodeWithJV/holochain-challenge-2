@@ -35,7 +35,7 @@ async function fetchComment() {
       cap_secret: null,
       role_name: "blog",
       zome_name: "blog",
-      fn_name: "get_original_comment",
+      fn_name: "get_latest_comment",
       payload: commentHash,
     });
     if (record) {

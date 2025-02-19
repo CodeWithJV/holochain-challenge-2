@@ -38,7 +38,7 @@ async function fetchPost() {
       cap_secret: null,
       role_name: "blog",
       zome_name: "blog",
-      fn_name: "get_original_post",
+      fn_name: "get_latest_post",
       payload: postHash,
     });
     if (record) {
@@ -99,7 +99,6 @@ async function deletePost() {
       >Edit Post</button>
       <button class="delete-button" on:click={() => deletePost()}>Delete Post</button>
     </div>
-    <!--
     <div class="comments-section">
       <h3>Comments</h3>
       
@@ -124,6 +123,5 @@ async function deletePost() {
         >Add Comment</button>
       {/if}
     </div>
-    -->
   </section>
 {/if}
