@@ -1,133 +1,98 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount, getContext } from 'svelte'
-  import '@material/mwc-circular-progress'
-  import { decode } from '@msgpack/msgpack'
-  import type {
-    Record,
-    ActionHash,
-    AppClient,
-    EntryHash,
-    AgentPubKey,
-    DnaHash,
-  } from '@holochain/client'
-  import { clientContext } from '../../contexts'
-  import type { Comment } from './types'
-  import '@material/mwc-circular-progress'
-  import type { Snackbar } from '@material/mwc-snackbar'
-  import '@material/mwc-snackbar'
-  import '@material/mwc-icon-button'
-  import EditComment from './EditComment.svelte'
+import type { ActionHash, AgentPubKey, AppClient, DnaHash, EntryHash, HolochainError, Record } from "@holochain/client";
+import { decode } from "@msgpack/msgpack";
+import { createEventDispatcher, getContext, onMount } from "svelte";
+import { type ClientContext, clientContext } from "../../contexts";
+import EditComment from "./EditComment.svelte";
+import type { Comment } from "./types";
 
-  const dispatch = createEventDispatcher()
+let client: AppClient;
+const appClientContext = getContext<ClientContext>(clientContext);
+const dispatch = createEventDispatcher();
 
-  export let commentHash: ActionHash
+let loading: boolean = false;
+let editing = false;
+let error: HolochainError | undefined;
+let record: Record | undefined;
+let comment: Comment | undefined;
 
-  let client: AppClient = (getContext(clientContext) as any).getClient()
+export let commentHash: ActionHash;
 
-  let loading: boolean
-  let error: any = undefined
+$: editing, error, loading, record, comment;
 
-  let record: Record | undefined
-  let comment: Comment | undefined
-
-  let editing = false
-
-  let errorSnackbar: Snackbar
-
-  $: editing, error, loading, record, comment
-
-  onMount(async () => {
-    if (commentHash === undefined) {
-      throw new Error(
-        `The commentHash input is required for the CommentDetail element`
-      )
-    }
-    await fetchComment()
-  })
-
-  async function fetchComment() {
-    loading = true
-
-    try {
-      record = await client.callZome({
-        cap_secret: null,
-        role_name: 'blog',
-        zome_name: 'blog',
-        fn_name: 'get_latest_comment',
-        payload: commentHash,
-      })
-      if (record) {
-        comment = decode((record.entry as any).Present.entry) as Comment
-      }
-    } catch (e) {
-      error = e
-    }
-
-    loading = false
+onMount(async () => {
+  if (commentHash === undefined) {
+    throw new Error(`The commentHash input is required for the CommentDetail element`);
   }
+  client = await appClientContext.getClient();
+  await fetchComment();
+});
 
-  async function deleteComment() {
-    try {
-      await client.callZome({
-        cap_secret: null,
-        role_name: 'blog',
-        zome_name: 'blog',
-        fn_name: 'delete_comment',
-        payload: commentHash,
-      })
-      dispatch('comment-deleted', { commentHash: commentHash })
-    } catch (e: any) {
-      errorSnackbar.labelText = `Error deleting the comment: ${e}`
-      errorSnackbar.show()
+async function fetchComment() {
+  loading = true;
+  try {
+    record = await client.callZome({
+      cap_secret: null,
+      role_name: "blog",
+      zome_name: "blog",
+      fn_name: "get_latest_comment",
+      payload: commentHash,
+    });
+    if (record) {
+      comment = decode((record.entry as any).Present.entry) as Comment;
     }
+  } catch (e) {
+    error = e as HolochainError;
+  } finally {
+    loading = false;
   }
+}
+
+async function deleteComment() {
+  try {
+    await client.callZome({
+      cap_secret: null,
+      role_name: "blog",
+      zome_name: "blog",
+      fn_name: "delete_comment",
+      payload: commentHash,
+    });
+    dispatch("comment-deleted", { commentHash: commentHash });
+  } catch (e) {
+    alert((e as HolochainError).message);
+  }
+}
 </script>
 
-<mwc-snackbar bind:this={errorSnackbar} leading> </mwc-snackbar>
-
 {#if loading}
-  <div
-    style="display: flex; flex: 1; align-items: center; justify-content: center"
-  >
-    <mwc-circular-progress indeterminate></mwc-circular-progress>
-  </div>
+  <progress />
 {:else if error}
-  <span>Error fetching the comment: {error}</span>
+  <div class="alert">Error fetching the comment: {error.message}</div>
 {:else if editing}
   <EditComment
     currentRecord={record}
     on:comment-updated={async () => {
-      editing = false
-      await fetchComment()
+      editing = false;
+      await fetchComment();
     }}
     on:edit-canceled={() => {
-      editing = false
+      editing = false;
     }}
-  ></EditComment>
+  />
 {:else}
-  <div style="display: flex; flex-direction: row">
-    <div
-      style="display: flex; flex-direction: row; align-items: center; flex: 1;"
-    >
-      <span style="margin-right: 4px"><strong>Comment:</strong></span>
-      <span style="white-space: pre-line; text-align: start;"
-        >{comment?.content}</span
-      >
+  <section>
+    <div>
+      <span><strong>Content:</strong></span>
+      <span>{comment?.content}</span>
     </div>
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div style="display: flex; flex-direction: row">
-      <mwc-icon-button
-        style="margin-left: 8px"
-        icon="edit"
+
+    <div>
+      <button
         on:click={() => {
-          editing = true
+          editing = true;
         }}
-      ></mwc-icon-button>
-      <mwc-icon-button
-        style="margin-left: 8px"
-        icon="delete"
-        on:click={() => deleteComment()}
-      ></mwc-icon-button>
+      >edit</button>
+      <button on:click={() => deleteComment()}>delete</button>
     </div>
-  </div>
+  </section>
 {/if}

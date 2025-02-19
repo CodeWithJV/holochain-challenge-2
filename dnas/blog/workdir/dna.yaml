@@ -1,21 +1,21 @@
----
-manifest_version: "1"
+manifest_version: '1'
 name: blog
 integrity:
-  network_seed: ~
-  properties: ~
-  origin_time: 1718600226298665
+  network_seed: null
+  properties: null
+  origin_time: 1737685342678416
   zomes:
-    - name: blog_integrity
-      hash: ~
-      bundled: "../../../target/wasm32-unknown-unknown/release/blog_integrity.wasm"
-      dependencies: ~
-      dylib: ~
+  - name: blog_integrity
+    hash: null
+    bundled: '../../../target/wasm32-unknown-unknown/release/blog_integrity.wasm'
+    dependencies: null
+    dylib: null
 coordinator:
   zomes:
-    - name: blog
-      hash: ~
-      bundled: "../../../target/wasm32-unknown-unknown/release/blog.wasm"
-      dependencies:
-        - name: blog_integrity
-      dylib: ~
+  - name: blog
+    hash: null
+    bundled: '../../../target/wasm32-unknown-unknown/release/blog.wasm'
+    dependencies:
+    - name: blog_integrity
+    dylib: null
+lineage: []

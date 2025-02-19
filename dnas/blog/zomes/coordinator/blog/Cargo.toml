@@ -9,7 +9,5 @@ name = "blog"
 
 [dependencies]
 hdk = { workspace = true }
-
 serde = { workspace = true }
-
-blog_integrity = { workspace = true } 
+blog_integrity = { workspace = true }

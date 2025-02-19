@@ -1,86 +1,77 @@
 <script lang="ts">
-  import { onMount, getContext } from 'svelte'
-  import '@material/mwc-circular-progress'
-  import type {
-    Link,
-    ActionHash,
-    EntryHash,
-    AppClient,
-    Record,
-    AgentPubKey,
-    NewEntryAction,
-  } from '@holochain/client'
-  import { clientContext } from '../../contexts'
-  import type { Comment, BlogSignal } from './types'
-  import CommentDetail from './CommentDetail.svelte'
+import type {
+  ActionHash,
+  AgentPubKey,
+  AppClient,
+  EntryHash,
+  HolochainError,
+  Link,
+  NewEntryAction,
+  Record,
+  SignalType,
+} from "@holochain/client";
+import { SignalType } from "@holochain/client";
+import { getContext, onMount } from "svelte";
+import { type ClientContext, clientContext } from "../../contexts";
+import CommentDetail from "./CommentDetail.svelte";
+import type { BlogSignal, Comment } from "./types";
 
-  export let postHash: ActionHash
+let client: AppClient;
+const appClientContext = getContext<ClientContext>(clientContext);
 
-  let client: AppClient = (getContext(clientContext) as any).getClient()
+let hashes: Array<ActionHash> | undefined = [];
+let loading: boolean;
+let error: any = undefined;
 
-  let hashes: Array<ActionHash> | undefined = []
+export let postHash: ActionHash;
 
-  let loading: boolean
-  let error: any = undefined
+$: hashes, loading, error;
 
-  $: hashes, loading, error
-
-  onMount(async () => {
-    if (postHash === undefined) {
-      throw new Error(
-        `The postHash input is required for the CommentsForPost element`
-      )
-    }
-
-    await fetchComments()
-
-    client.on('signal', async (signal) => {
-      if (signal.zome_name !== 'blog') return
-      const payload = signal.payload as BlogSignal
-      if (
-        !(
-          payload.type === 'EntryCreated' &&
-          payload.app_entry.type === 'Comment'
-        )
-      )
-        return
-      await fetchComments()
-    })
-  })
-
-  async function fetchComments() {
-    loading = true
-    try {
-      const links: Array<Link> = await client.callZome({
-        cap_secret: null,
-        role_name: 'blog',
-        zome_name: 'blog',
-        fn_name: 'get_comments_for_post',
-        payload: postHash,
-      })
-      hashes = links.map((l) => l.target)
-    } catch (e) {
-      error = e
-    }
-    loading = false
+onMount(async () => {
+  if (postHash === undefined) {
+    throw new Error(`The postHash input is required for the CommentsForPost element`);
   }
+  client = await appClientContext.getClient();
+  await fetchComments();
+
+  client.on("signal", async signal => {
+    if (!(SignalType.App in signal)) return;
+    if (signal.App.zome_name !== "blog") return;
+    const payload = signal.App.payload as BlogSignal;
+    if (!(payload.type === "EntryCreated" && payload.app_entry.type === "Comment")) return;
+    await fetchComments();
+  });
+});
+
+async function fetchComments() {
+  loading = true;
+  try {
+    const links: Array<Link> = await client.callZome({
+      cap_secret: null,
+      role_name: "blog",
+      zome_name: "blog",
+      fn_name: "get_comments_for_post",
+      payload: postHash,
+    });
+    hashes = links.map(l => l.target);
+  } catch (e) {
+    error = e as HolochainError;
+  } finally {
+    loading = false;
+  }
+}
 </script>
 
 {#if loading}
-  <div
-    style="display: flex; flex: 1; align-items: center; justify-content: center"
-  >
-    <mwc-circular-progress indeterminate></mwc-circular-progress>
-  </div>
+  <progress />
 {:else if error}
-  <span>Error fetching comments: ${error}.</span>
+  <div class="alert">Error fetching comments: ${error.message}.</div>
+{:else if hashes.length === 0}
+  <div class="alert">No comments found for this post.</div>
 {:else}
-  <div style="display: flex; flex-direction: column">
+  <div>
     {#each hashes as hash}
-      <div style="margin-bottom: 8px;">
-        <CommentDetail commentHash={hash} on:comment-deleted={fetchComments}
-        ></CommentDetail>
-      </div>
+      <CommentDetail commentHash={hash} on:comment-deleted={fetchComments} />
     {/each}
   </div>
 {/if}

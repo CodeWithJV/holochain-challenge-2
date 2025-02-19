@@ -5,7 +5,7 @@ In this challenge we will learn how to manipulate links to achieve the following
 - [ ] 1. Retrieving entries within a collection
 - [ ] 2. Retrieving the latest update of an entry
 - [ ] 3. Deleting links
-- [ ] 4. Retrieving entries that should correspond to another entry (ie: Post/Comments)
+- [ ] 4. Retrieving related entries (eg: Post/Comments)
 
 ## Setup
 

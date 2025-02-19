@@ -1,47 +1,50 @@
 <script lang="ts">
-  import Banner from './Banner.svelte'
-  import { onMount, setContext } from 'svelte'
-  import type { ActionHash, AppClient } from '@holochain/client'
-  import { AppWebsocket } from '@holochain/client'
-  import '@material/mwc-circular-progress'
+import type { ActionHash, AppClient, HolochainError } from "@holochain/client";
+import { AppWebsocket } from "@holochain/client";
+import { onMount, setContext } from "svelte";
 
-  import { clientContext } from './contexts'
-  import CreatePost from './blog/blog/CreatePost.svelte'
-  import AllPosts from './blog/blog/AllPosts.svelte'
+import { type ClientContext, clientContext } from "./contexts";
 
-  let client: AppClient | undefined
+import Banner from './Banner.svelte'
+import CreatePost from './blog/blog/CreatePost.svelte'
+import AllPosts from './blog/blog/AllPosts.svelte'
 
-  let loading = true
+let client: AppClient | undefined;
+let error: HolochainError | undefined;
+let loading = false;
 
-  onMount(async () => {
-    // We pass an unused string as the url because it will dynamically be replaced in launcher environments
-    client = await AppWebsocket.connect()
+const appClientContext = {
+  getClient: async () => {
+    if (!client) {
+      client = await AppWebsocket.connect();
+    }
+    return client;
+  },
+};
 
-    loading = false
-  })
+onMount(async () => {
+  try {
+    loading = true;
+    client = await appClientContext.getClient();
+  } catch (e) {
+    error = e as HolochainError;
+  } finally {
+    loading = false;
+  }
+});
 
-  setContext(clientContext, {
-    getClient: () => client,
-  })
+setContext<ClientContext>(clientContext, appClientContext);
 </script>
 
-<Banner challengeNumber={2} challengeName="Links & Collections">
-  <div style="max-width: 600px; margin: 0 auto; height: 100%;">
+<Banner challengeName={'Links and Collections'} challengeNumber={2}>
+  <div>
     {#if loading}
-      <div
-        style="display: flex; flex: 1; align-items: center; justify-content: center"
-      >
-        <mwc-circular-progress indeterminate />
-      </div>
-    {:else}
-      <div
-        id="content"
-        style="display: flex; flex-direction: column; flex: 1; justify-content: center; align-items: center; height: 100%; padding-bottom: 80px; box-sizing: border-box;"
-      >
-        <!-- Add your CreatePost and AllPosts components here -->
-        <CreatePost author={client.myPubKey} />
-        <AllPosts />
-      </div>
+      Loading
+    {:else if client}
+      <!-- Add your CreatePost and AllPosts components here -->
+      <CreatePost author={client.myPubKey} />
+      <AllPosts />
     {/if}
+
   </div>
 </Banner>

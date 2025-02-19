@@ -1,7 +1,6 @@
----
-manifest_version: "1"
-name: c-2
+manifest_version: '1'
+name: links_and_collections
 ui:
-  bundled: "../ui/dist.zip"
+  bundled: '../ui/dist.zip'
 happ_manifest:
-  bundled: "./c-2.happ"
+  bundled: './links_and_collections.happ'

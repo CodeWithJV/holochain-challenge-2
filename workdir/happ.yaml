@@ -1,18 +1,18 @@
----
-manifest_version: "1"
-name: c-2
-description: ~
+manifest_version: '1'
+name: links_and_collections
+description: null
 roles:
-  - name: blog
-    provisioning:
-      strategy: create
-      deferred: false
-    dna:
-      bundled: "../dnas/blog/workdir/blog.dna"
-      modifiers:
-        network_seed: ~
-        properties: ~
-        origin_time: ~
-        quantum_time: ~
-      installed_hash: ~
-      clone_limit: 0
+- name: blog
+  provisioning:
+    strategy: create
+    deferred: false
+  dna:
+    bundled: '../dnas/blog/workdir/blog.dna'
+    modifiers:
+      network_seed: null
+      properties: null
+      origin_time: null
+      quantum_time: null
+    installed_hash: null
+    clone_limit: 0
+allow_deferred_memproofs: false

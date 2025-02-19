@@ -1,5 +1,5 @@
 <script lang="ts">
-  import logo from './../logo.svg'
+  import logo from './assets/holochainLogo.svg'
 
   export let challengeNumber: number = 0
   export let challengeName: string = ''
@@ -13,7 +13,7 @@
 </svelte:head>
 
 <div
-  style="display: flex; flex-direction: column; min-height: 100vh; width: 100vw; padding: 16px; box-sizing: border-box;"
+  style="display: flex; flex-direction: column; height: 100vh; width: 100vw; padding: 16px; box-sizing: border-box;"
 >
   <header style="height: 48px; display: flex; justify-content: space-between;">
     <h1 style="font: 1.4em lato; margin-top: 5px; font-weight: 300;">

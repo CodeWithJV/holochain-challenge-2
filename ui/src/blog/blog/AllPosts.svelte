@@ -1,66 +1,74 @@
 <script lang="ts">
-  import { onMount, getContext } from 'svelte'
-  import '@material/mwc-circular-progress'
-  import type { Record, ActionHash, AppClient } from '@holochain/client'
-  import { clientContext } from '../../contexts'
-  import PostDetail from './PostDetail.svelte'
-  import type { BlogSignal } from './types'
+import type {
+  ActionHash,
+  AgentPubKey,
+  AppClient,
+  EntryHash,
+  HolochainError,
+  Link,
+  NewEntryAction,
+  Record,
+} from "@holochain/client";
+import { SignalType } from "@holochain/client";
+import { getContext, onMount } from "svelte";
+import { type ClientContext, clientContext } from "../../contexts";
+import PostDetail from "./PostDetail.svelte";
+import type { BlogSignal } from "./types";
 
-  let client: AppClient = (getContext(clientContext) as any).getClient()
+let client: AppClient;
+const appClientContext = getContext<ClientContext>(clientContext);
 
-  let hashes: Array<ActionHash> | undefined
-  let loading = true
-  let error: any = undefined
+let hashes: Array<ActionHash> = [];
+let loading = false;
+let error: any = undefined;
 
-  $: hashes, loading, error
+$: hashes, loading, error;
 
-  onMount(async () => {
-    // Delay by a bit to allow backend to bootup
-    setTimeout(async () => {
-      await fetchPosts()
-    }, 300)
-    client.on('signal', (signal) => {
-      if (signal.zome_name !== 'blog') return
-      const payload = signal.payload as BlogSignal
-      if (payload.type !== 'EntryCreated') return
-      if (payload.app_entry.type !== 'Post') return
-      hashes = [...hashes, payload.action.hashed.hash]
-    })
-  })
+onMount(async () => {
+  client = await appClientContext.getClient();
+  await fetchPosts();
+  client.on("signal", signal => {
+    if (!(SignalType.App in signal)) return;
+    if (signal.App.zome_name !== "blog") return;
+    const payload = signal.App.payload as BlogSignal;
+    if (payload.type !== "EntryCreated") return;
+    if (payload.app_entry.type !== "Post") return;
+    hashes = [...hashes, payload.action.hashed.hash];
+  });
+});
 
-  async function fetchPosts() {
-    try {
-      const links = await client.callZome({
-        cap_secret: null,
-        role_name: 'blog',
-        zome_name: 'blog',
-        fn_name: 'get_all_posts',
-        payload: null,
-      })
-      hashes = links.map((l) => l.target)
-    } catch (e) {
-      error = e
+async function fetchPosts() {
+  loading = true;
+  try {
+    const links: Array<Link> = await client.callZome({
+      cap_secret: null,
+      role_name: "blog",
+      zome_name: "blog",
+      fn_name: "get_all_posts",
+      payload: null,
+    });
+    if (links.length) {
+      hashes = links.map(l => l.target);
     }
-    loading = false
+    hashes = links.map(l => l.target);
+  } catch (e) {
+    error = e as HolochainError;
+  } finally {
+    loading = false;
   }
+}
 </script>
 
 {#if loading}
-  <mwc-circular-progress indeterminate></mwc-circular-progress>
+  <progress />
 {:else if error}
-  <span>Error fetching the posts: {error}.</span>
-{:else if hashes.length === 0}
-  <span>No posts found.</span>
+  <div class="alert">Error fetching the posts: {error.message}.</div>
+{:else if !hashes.length}
+  <div class="alert">No posts found.</div>
 {:else}
-  <div style="display: flex; flex-direction: column; width: 100%;">
-    <span style="margin-top: 16px; font-size: 18px;"
-      ><strong>Posts</strong></span
-    >
+  <div>
     {#each hashes as hash}
-      <div style="margin-bottom: 8px;">
-        <PostDetail postHash={hash} on:post-deleted={() => fetchPosts()}
-        ></PostDetail>
-      </div>
+      <PostDetail postHash={hash} on:post-deleted={() => fetchPosts()} />
     {/each}
   </div>
 {/if}

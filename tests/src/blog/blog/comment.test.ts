@@ -1,30 +1,30 @@
 import { assert, test } from "vitest";
 
-import { runScenario, dhtSync, CallableCell } from '@holochain/tryorama';
 import {
-  NewEntryAction,
   ActionHash,
-  Record,
-  Link,
+  AppBundleSource,
   CreateLink,
   DeleteLink,
-  SignedActionHashed,
-  AppBundleSource,
   fakeActionHash,
   fakeAgentPubKey,
-  fakeEntryHash
-} from '@holochain/client';
-import { decode } from '@msgpack/msgpack';
+  fakeEntryHash,
+  Link,
+  NewEntryAction,
+  Record,
+  SignedActionHashed,
+} from "@holochain/client";
+import { CallableCell, dhtSync, runScenario } from "@holochain/tryorama";
+import { decode } from "@msgpack/msgpack";
 
-import { createComment, sampleComment } from './common.js';
+import { createComment, sampleComment } from "./common.js";
 
-test('create Comment', async () => {
+test("create Comment", async () => {
   await runScenario(async scenario => {
     // Construct proper paths for your app.
     // This assumes app bundle created by the `hc app pack` command.
-    const testAppPath = process.cwd() + '/../workdir/c-2.happ';
+    const testAppPath = process.cwd() + "/../workdir/links_and_collections.happ";
 
-    // Set up the app to be installed 
+    // Set up the app to be installed
     const appSource = { appBundleSource: { path: testAppPath } };
 
     // Add 2 players with the test app to the Scenario. The returned players
@@ -41,13 +41,13 @@ test('create Comment', async () => {
   });
 });
 
-test('create and read Comment', async () => {
+test("create and read Comment", async () => {
   await runScenario(async scenario => {
     // Construct proper paths for your app.
     // This assumes app bundle created by the `hc app pack` command.
-    const testAppPath = process.cwd() + '/../workdir/c-2.happ';
+    const testAppPath = process.cwd() + "/../workdir/links_and_collections.happ";
 
-    // Set up the app to be installed 
+    // Set up the app to be installed
     const appSource = { appBundleSource: { path: testAppPath } };
 
     // Add 2 players with the test app to the Scenario. The returned players
@@ -79,20 +79,28 @@ test('create and read Comment', async () => {
     let linksToPosts: Link[] = await bob.cells[0].callZome({
       zome_name: "blog",
       fn_name: "get_comments_for_post",
-      payload: sample.post_hash
+      payload: sample.post_hash,
     });
     assert.equal(linksToPosts.length, 1);
     assert.deepEqual(linksToPosts[0].target, record.signed_action.hashed.hash);
+    // Bob gets the Authors for the new Comment
+    let linksToAuthors: Link[] = await bob.cells[0].callZome({
+      zome_name: "blog",
+      fn_name: "get_comments_for_author",
+      payload: sample.author,
+    });
+    assert.equal(linksToAuthors.length, 1);
+    assert.deepEqual(linksToAuthors[0].target, record.signed_action.hashed.hash);
   });
 });
 
-test('create and update Comment', async () => {
+test("create and update Comment", async () => {
   await runScenario(async scenario => {
     // Construct proper paths for your app.
     // This assumes app bundle created by the `hc app pack` command.
-    const testAppPath = process.cwd() + '/../workdir/c-2.happ';
+    const testAppPath = process.cwd() + "/../workdir/links_and_collections.happ";
 
-    // Set up the app to be installed 
+    // Set up the app to be installed
     const appSource = { appBundleSource: { path: testAppPath } };
 
     // Add 2 players with the test app to the Scenario. The returned players
@@ -106,9 +114,9 @@ test('create and update Comment', async () => {
     // Alice creates a Comment
     const record: Record = await createComment(alice.cells[0]);
     assert.ok(record);
-        
+
     const originalActionHash = record.signed_action.hashed.hash;
- 
+
     // Alice updates the Comment
     let contentUpdate: any = await sampleComment(alice.cells[0]);
     let updateInput = {
@@ -125,7 +133,7 @@ test('create and update Comment', async () => {
 
     // Wait for the updated entry to be propagated to the other node.
     await dhtSync([alice, bob], alice.cells[0].cell_id[0]);
-        
+
     // Bob gets the updated Comment
     const readUpdatedOutput0: Record = await bob.cells[0].callZome({
       zome_name: "blog",
@@ -136,7 +144,7 @@ test('create and update Comment', async () => {
 
     // Alice updates the Comment again
     contentUpdate = await sampleComment(alice.cells[0]);
-    updateInput = { 
+    updateInput = {
       previous_comment_hash: updatedRecord.signed_action.hashed.hash,
       updated_comment: contentUpdate,
     };
@@ -150,7 +158,7 @@ test('create and update Comment', async () => {
 
     // Wait for the updated entry to be propagated to the other node.
     await dhtSync([alice, bob], alice.cells[0].cell_id[0]);
-        
+
     // Bob gets the updated Comment
     const readUpdatedOutput1: Record = await bob.cells[0].callZome({
       zome_name: "blog",
@@ -170,13 +178,13 @@ test('create and update Comment', async () => {
   });
 });
 
-test('create and delete Comment', async () => {
+test("create and delete Comment", async () => {
   await runScenario(async scenario => {
     // Construct proper paths for your app.
     // This assumes app bundle created by the `hc app pack` command.
-    const testAppPath = process.cwd() + '/../workdir/c-2.happ';
+    const testAppPath = process.cwd() + "/../workdir/links_and_collections.happ";
 
-    // Set up the app to be installed 
+    // Set up the app to be installed
     const appSource = { appBundleSource: { path: testAppPath } };
 
     // Add 2 players with the test app to the Scenario. The returned players
@@ -199,10 +207,18 @@ test('create and delete Comment', async () => {
     let linksToPosts: Link[] = await bob.cells[0].callZome({
       zome_name: "blog",
       fn_name: "get_comments_for_post",
-      payload: sample.post_hash
+      payload: sample.post_hash,
     });
     assert.equal(linksToPosts.length, 1);
     assert.deepEqual(linksToPosts[0].target, record.signed_action.hashed.hash);
+    // Bob gets the Authors for the new Comment
+    let linksToAuthors: Link[] = await bob.cells[0].callZome({
+      zome_name: "blog",
+      fn_name: "get_comments_for_author",
+      payload: sample.author,
+    });
+    assert.equal(linksToAuthors.length, 1);
+    assert.deepEqual(linksToAuthors[0].target, record.signed_action.hashed.hash);
 
     // Alice deletes the Comment
     const deleteActionHash = await alice.cells[0].callZome({
@@ -214,7 +230,7 @@ test('create and delete Comment', async () => {
 
     // Wait for the entry deletion to be propagated to the other node.
     await dhtSync([alice, bob], alice.cells[0].cell_id[0]);
-        
+
     // Bob gets the oldest delete for the Comment
     const oldestDeleteForComment: SignedActionHashed = await bob.cells[0].callZome({
       zome_name: "blog",
@@ -222,7 +238,7 @@ test('create and delete Comment', async () => {
       payload: record.signed_action.hashed.hash,
     });
     assert.ok(oldestDeleteForComment);
-        
+
     // Bob gets the deletions for the Comment
     const deletesForComment: SignedActionHashed[] = await bob.cells[0].callZome({
       zome_name: "blog",
@@ -235,17 +251,33 @@ test('create and delete Comment', async () => {
     linksToPosts = await bob.cells[0].callZome({
       zome_name: "blog",
       fn_name: "get_comments_for_post",
-      payload: sample.post_hash
+      payload: sample.post_hash,
     });
     assert.equal(linksToPosts.length, 0);
 
-    // Bob gets the deleted Posts for the Comment 
-    const deletedLinksToPosts: Array<[SignedActionHashed<CreateLink>, SignedActionHashed<DeleteLink>[]]> = await bob.cells[0].callZome({
-      zome_name: "blog",
-      fn_name: "get_deleted_comments_for_post",
-      payload: sample.post_hash
-    });
+    // Bob gets the deleted Posts for the Comment
+    const deletedLinksToPosts: Array<[SignedActionHashed<CreateLink>, SignedActionHashed<DeleteLink>[]]> = await bob
+      .cells[0].callZome({
+        zome_name: "blog",
+        fn_name: "get_deleted_comments_for_post",
+        payload: sample.post_hash,
+      });
     assert.equal(deletedLinksToPosts.length, 1);
+    // Bob gets the Authors for the Comment again
+    linksToAuthors = await bob.cells[0].callZome({
+      zome_name: "blog",
+      fn_name: "get_comments_for_author",
+      payload: sample.author,
+    });
+    assert.equal(linksToAuthors.length, 0);
 
+    // Bob gets the deleted Authors for the Comment
+    const deletedLinksToAuthors: Array<[SignedActionHashed<CreateLink>, SignedActionHashed<DeleteLink>[]]> = await bob
+      .cells[0].callZome({
+        zome_name: "blog",
+        fn_name: "get_deleted_comments_for_author",
+        payload: sample.author,
+      });
+    assert.equal(deletedLinksToAuthors.length, 1);
   });
 });
