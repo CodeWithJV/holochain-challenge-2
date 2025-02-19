@@ -48,7 +48,12 @@ Navigate to `dnas/blog/zomes/coordinator/blog/src/post.rs` and paste the followi
 
 ```rust
     let path = Path::from("all_posts");
-    create_link(path.path_entry_hash()?, post_hash.clone(), LinkTypes::AllPosts, ())?;
+    create_link(
+        path.path_entry_hash()?,
+        post_hash.clone(),
+        LinkTypes::AllPosts,
+        (),
+    )?;
 ```
 
 The addition of these lines of code will create a link from an arbitrary 'point' on the DHT to the post. This point is called a collection and will help us retrieve all of the posts in the app from a single location.

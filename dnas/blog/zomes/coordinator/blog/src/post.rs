@@ -13,13 +13,7 @@ pub fn create_post(post: Post) -> ExternResult<Record> {
     let record = get(post_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
         WasmErrorInner::Guest("Could not find the newly created Post".to_string())
     ))?;
-    let path = Path::from("all_posts");
-    create_link(
-        path.path_entry_hash()?,
-        post_hash.clone(),
-        LinkTypes::AllPosts,
-        (),
-    )?;
+    //create link to all_posts here
     Ok(record)
 }
 

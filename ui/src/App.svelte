@@ -42,8 +42,6 @@ setContext<ClientContext>(clientContext, appClientContext);
       Loading
     {:else if client}
       <!-- Add your CreatePost and AllPosts components here -->
-      <CreatePost author={client.myPubKey} />
-      <AllPosts />
     {/if}
 
   </div>
