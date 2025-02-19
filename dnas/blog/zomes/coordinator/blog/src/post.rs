@@ -4,12 +4,6 @@ use hdk::prelude::*;
 #[hdk_extern]
 pub fn create_post(post: Post) -> ExternResult<Record> {
     let post_hash = create_entry(&EntryTypes::Post(post.clone()))?;
-    create_link(
-        post.author.clone(),
-        post_hash.clone(),
-        LinkTypes::AuthorToPosts,
-        (),
-    )?;
     let record = get(post_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
         WasmErrorInner::Guest("Could not find the newly created Post".to_string())
     ))?;
