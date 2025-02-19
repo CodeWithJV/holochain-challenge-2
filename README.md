@@ -119,7 +119,7 @@ create_link(
     input.original_post_hash.clone(),
     updated_post_hash.clone(),
     LinkTypes::PostUpdates,
-    ()
+    (),
 )?;
 ```
 
@@ -139,7 +139,7 @@ Navigate to `dnas/blog/zomes/coordinator/src/post.rs` and add the following zome
 #[hdk_extern]
 pub fn get_latest_post(original_post_hash: ActionHash) -> ExternResult<Option<Record>> {
     let links = get_links(
-        GetLinksInputBuilder::try_new(original_post_hash.clone(), LinkTypes::PostUpdates)?.build()
+        GetLinksInputBuilder::try_new(original_post_hash.clone(), LinkTypes::PostUpdates)?.build(),
     )?;
     let latest_link = links
         .into_iter()
@@ -149,18 +149,16 @@ pub fn get_latest_post(original_post_hash: ActionHash) -> ExternResult<Option<Re
             link.target
                 .clone()
                 .into_action_hash()
-                .ok_or(
-                    wasm_error!(
-                        WasmErrorInner::Guest("No action hash associated with link".to_string())
-                    )
-                )?
+                .ok_or(wasm_error!(WasmErrorInner::Guest(
+                    "No action hash associated with link".to_string()
+                )))?
         }
         None => original_post_hash.clone(),
     };
     get(latest_post_hash, GetOptions::default())
 }
 ```
-Go through the function line by line and look up the docs for any functions that are new to you.
+Go through the code line by line and look up the docs for any functions that are new to you.
 
 Remember we need to restart the Holochain app as we've edited zome code.
 
@@ -179,9 +177,19 @@ Unlike regular entries, links can be permanently removed from the DHT.
 Inside `dnas/zomes/coordinator/blog/src/post.rs`, add the following code inside the `delete_post` function
 
 ```rust
+    let links = get_links(
+        GetLinksInputBuilder::try_new(post.author.clone(), LinkTypes::AuthorToPosts)?.build(),
+    )?;
+    for link in links {
+        if let Some(action_hash) = link.target.into_action_hash() {
+            if action_hash == original_post_hash {
+                delete_link(link.create_link_hash)?;
+            }
+        }
+    }
     let path = Path::from("all_posts");
     let links = get_links(
-        GetLinksInputBuilder::try_new(path.path_entry_hash()?, LinkTypes::AllPosts)?.build()
+        GetLinksInputBuilder::try_new(path.path_entry_hash()?, LinkTypes::AllPosts)?.build(),
     )?;
     for link in links {
         if let Some(hash) = link.target.into_action_hash() {
@@ -232,7 +240,12 @@ Hint for creating the link
 Add this block of code to the create_comment function inside `dnas/blog/zomes/coordinator/blog/src/comment.rs`
 
 ```rust
-    create_link(comment.post_hash.clone(), comment_hash.clone(), LinkTypes::PostToComments, ())?;
+    create_link(
+        comment.post_hash.clone(),
+        comment_hash.clone(),
+        LinkTypes::PostToComments,
+        (),
+    )?;
 ```
 
 </details>
@@ -249,7 +262,6 @@ Add this zome function to `dnas/blogs/zomes/coordinator/blog/src/comment.rs`
 pub fn get_comments_for_post(post_hash: ActionHash) -> ExternResult<Vec<Link>> {
     get_links(GetLinksInputBuilder::try_new(post_hash, LinkTypes::PostToComments)?.build())
 }
-
 ```
 
 </details>
@@ -258,7 +270,7 @@ Don't forget to restart your app after changing zome code.
 
 #### 4. Make comments updatable
 
-Similarly to with updating posts, updating a comment will add a new action and its corresponding entry to the DHT. However once again, these changes will not be reflected in the agent's window UI.
+Similarly to updating posts, updating a comment will add a new action and its corresponding entry to the DHT. However once again, these changes will not be reflected in the agent's window UI.
 
 We could resolve this issue the same way we did with the posts; by creating a link from the create action to each new update action, however, there is another solution that we can use instead.
 
@@ -272,10 +284,12 @@ pub fn get_latest_comment(original_comment_hash: ActionHash) -> ExternResult<Opt
     let Some(details) = get_details(original_comment_hash, GetOptions::default())? else {
         return Ok(None);
     };
-    let record_details = (match details {
-        Details::Entry(_) => { Err(wasm_error!(WasmErrorInner::Guest("Malformed details".into()))) }
+    let record_details = match details {
+        Details::Entry(_) => Err(wasm_error!(WasmErrorInner::Guest(
+            "Malformed details".into()
+        ))),
         Details::Record(record_details) => Ok(record_details),
-    })?;
+    }?;
     match record_details.updates.last() {
         Some(update) => get_latest_comment(update.action_address().clone()),
         None => Ok(Some(record_details.record)),
@@ -301,21 +315,24 @@ To delete a comment, paste the following zome function inside `dnas/blog/zomes/c
 #[hdk_extern]
 pub fn delete_comment(original_comment_hash: ActionHash) -> ExternResult<ActionHash> {
     let details = get_details(original_comment_hash.clone(), GetOptions::default())?.ok_or(
-        wasm_error!(WasmErrorInner::Guest("Comment not found".to_string()))
+        wasm_error!(WasmErrorInner::Guest("Comment not found".to_string())),
     )?;
-    let record = (match details {
+    let record = match details {
         Details::Record(details) => Ok(details.record),
-        _ => {
-            Err(wasm_error!(WasmErrorInner::Guest("Malformed get details response".to_string())))
-        }
-    })?;
+        _ => Err(wasm_error!(WasmErrorInner::Guest(
+            "Malformed get details response".to_string()
+        ))),
+    }?;
     let entry = record
         .entry()
         .as_option()
-        .ok_or(wasm_error!(WasmErrorInner::Guest("Comment record has no entry".to_string())))?;
+        .ok_or(wasm_error!(WasmErrorInner::Guest(
+            "Comment record has no entry".to_string()
+        )))?;
     let comment = <Comment>::try_from(entry)?;
     let links = get_links(
-        GetLinksInputBuilder::try_new(comment.post_hash.clone(), LinkTypes::PostToComments)?.build()
+        GetLinksInputBuilder::try_new(comment.post_hash.clone(), LinkTypes::PostToComments)?
+            .build(),
     )?;
     for link in links {
         if let Some(action_hash) = link.target.into_action_hash() {
