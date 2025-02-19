@@ -1,4 +1,5 @@
 <script lang="ts">
+import "./styles.css";
 import type { ActionHash, AgentPubKey, AppClient, DnaHash, EntryHash, HolochainError, Record } from "@holochain/client";
 import { createEventDispatcher, getContext, onMount } from "svelte";
 import { type ClientContext, clientContext } from "../../contexts";
@@ -45,19 +46,19 @@ async function createPost() {
 }
 </script>
 
-<div>
+<div class="post-form">
   <h3>Create Post</h3>
 
-  <div>
-    <label for="Name">Name</label>
-    <textarea name="Name" bind:value={name} required />
+  <div class="form-group">
+    <label for="Name">Title</label>
+    <textarea name="Name" bind:value={name} required placeholder="Enter post title..." />
   </div>
-  <div>
+  <div class="form-group">
     <label for="Content">Content</label>
-    <textarea name="Content" bind:value={content} required />
+    <textarea name="Content" bind:value={content} required placeholder="Write your post content..." />
   </div>
 
-  <button disabled={!isPostValid} on:click={() => createPost()}>
+  <button class="button" disabled={!isPostValid} on:click={() => createPost()}>
     Create Post
   </button>
 </div>

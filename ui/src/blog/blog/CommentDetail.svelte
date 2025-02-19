@@ -80,19 +80,17 @@ async function deleteComment() {
     }}
   />
 {:else}
-  <section>
-    <div>
-      <span><strong>Content:</strong></span>
-      <span>{comment?.content}</span>
-    </div>
+  <div class="comment">
+    <div class="comment-content">{comment?.content}</div>
 
-    <div>
+    <div class="comment-actions">
       <button
+        class="edit-button"
         on:click={() => {
           editing = true;
         }}
-      >edit</button>
-      <button on:click={() => deleteComment()}>delete</button>
+      >Edit</button>
+      <button class="delete-button" on:click={() => deleteComment()}>Delete</button>
     </div>
-  </section>
+  </div>
 {/if}

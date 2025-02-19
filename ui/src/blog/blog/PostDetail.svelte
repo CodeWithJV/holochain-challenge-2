@@ -84,43 +84,45 @@ async function deletePost() {
     }}
   />
 {:else}
-  <section>
-    <div>
-      <span><strong>Name:</strong></span>
-      <span>{post?.name}</span>
-    </div>
-    <div>
-      <span><strong>Content:</strong></span>
-      <span>{post?.content}</span>
+  <section class="post-detail">
+    <div class="post-header">
+      <div class="post-title">{post?.name}</div>
+      <div class="post-content">{post?.content}</div>
     </div>
 
-    <div>
+    <div class="post-actions">
       <button
+        class="edit-button"
         on:click={() => {
           editing = true;
         }}
-      >edit</button>
-      <button on:click={() => deletePost()}>delete</button>
+      >Edit Post</button>
+      <button class="delete-button" on:click={() => deletePost()}>Delete Post</button>
     </div>
 
-    {#if creatingComment}
-      <CreateComment
-        on:canceled={() => {
-          creatingComment = false
-        }}
-        on:comment-created={() => {
-          creatingComment = false
-        }}
-        {postHash}
-        author={client.myPubKey}
-      />
-    {:else}
-      <CommentsForPost {postHash} />
-      <button
-        on:click={() => {
-          creatingComment = true
-        }}
-      >Add Comment</button>
-    {/if}
+    <div class="comments-section">
+      <h3>Comments</h3>
+      
+      {#if creatingComment}
+        <CreateComment
+          on:canceled={() => {
+            creatingComment = false
+          }}
+          on:comment-created={() => {
+            creatingComment = false
+          }}
+          {postHash}
+          author={client.myPubKey}
+        />
+      {:else}
+        <CommentsForPost {postHash} />
+        <button
+          class="button"
+          on:click={() => {
+            creatingComment = true
+          }}
+        >Add Comment</button>
+      {/if}
+    </div>
   </section>
 {/if}

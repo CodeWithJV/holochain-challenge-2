@@ -1,4 +1,5 @@
 <script lang="ts">
+import "./styles.css";
 import type {
   ActionHash,
   AgentPubKey,
@@ -59,16 +60,18 @@ async function fetchPosts() {
 }
 </script>
 
-{#if loading}
-  <progress />
-{:else if error}
-  <div class="alert">Error fetching the posts: {error.message}.</div>
-{:else if !hashes.length}
-  <div class="alert">No posts found.</div>
-{:else}
-  <div>
+<div class="posts-container">
+  {#if loading}
+    <progress />
+  {:else if error}
+    <div class="alert">Error fetching the posts: {error.message}.</div>
+  {:else if !hashes.length}
+    <div class="alert">No posts found.</div>
+  {:else}
+    <div>
     {#each hashes as hash}
       <PostDetail postHash={hash} on:post-deleted={() => fetchPosts()} />
     {/each}
-  </div>
-{/if}
+    </div>
+  {/if}
+</div>
