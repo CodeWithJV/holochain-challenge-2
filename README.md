@@ -103,11 +103,13 @@ Error fetching the posts: Error: Error invoking remote method 'sign-zome-call': 
 
 #### 1. Update a post inside the UI and refresh the window
 
-You can update a post by clicking on the pencil icon and changing the text.
+You can update a post by clicking on the edit button and changing the text.
 
 You will notice that the updates are not reflected in the UI.
 
 This is because the links from get_all_posts are the links from the initial create action, so they point to the initial entry, not the updated one.
+
+There are many ways to resolve this, let's go with the default architecture from `hc scaffold`
 
 #### 2. Create a link from the original post to the updated post.
 
@@ -124,13 +126,13 @@ create_link(
 
 #### 3. Restart the app, create a post, and update it a couple of times
 
-Can you see the CreateLink actions in the source chain after each update? If you look at the contents of the action the base_Address will be the same, pointing to the original post action.
+Can you see the CreateLink actions in the source chain after each update? If you look at the contents of the action the base_Address will be the same, pointing from the original post action.
 
 The post details won't be visible in the UI, let's fix that now.
 
 #### 4. Update the UI to get the most recent post
 
-Navigate to `PostDetail.svelte`  and change the zome call inside `fetchPost` from `get_original_post` to `get_latest_post`
+** Navigate to `PostDetail.svelte`  and change the zome call inside `fetchPost` from `get_original_post` to `get_latest_post` **
 
 Navigate to `dnas/blog/zomes/coordinator/src/post.rs` and add the following zome function
 
@@ -176,16 +178,6 @@ Unlike regular entries, links can be permanently removed from the DHT.
 Inside `dnas/zomes/coordinator/blog/src/post.rs`, add the following code inside the `delete_post` function
 
 ```rust
-    let links = get_links(
-        GetLinksInputBuilder::try_new(post.author.clone(), LinkTypes::AuthorToPosts)?.build(),
-    )?;
-    for link in links {
-        if let Some(action_hash) = link.target.into_action_hash() {
-            if action_hash == original_post_hash {
-                delete_link(link.create_link_hash)?;
-            }
-        }
-    }
     let path = Path::from("all_posts");
     let links = get_links(
         GetLinksInputBuilder::try_new(path.path_entry_hash()?, LinkTypes::AllPosts)?.build(),
@@ -215,8 +207,8 @@ Notice how a new record is added to the dht-entries panel and the agents source 
 
 To resolve this we need to do two things:
 
-- When creating a comment we also need to create a link from its post to itself.
-- We need to implement a zome function `get_comments_for_post`, which returns all the links pointing from the post action to each comment. This zome function is being called by `CommentsForPost.svelte`.
+- When creating a comment we also need to create a link from the post to the new comment.
+- Implement a zome function `get_comments_for_post`, which returns all the links pointing from the post action to each comment. This zome function is being called by `CommentsForPost.svelte`.
 
 #### 3. Implement comment creation and retrevial
 
@@ -229,7 +221,7 @@ The structure of the EntryTypes is defined in `comment.rs` and `post.rs` in the 
 When creating a comment we want to create a link from the post to the comment.
 Then we want to make make a zome function get all comments for a post.
 
-Try do it without using the hints!
+Look at the create_comment function inside `dnas/blog/zomes/coordinator/blog/src/comment.rs` and see if you can create the link without looking at the hint below.
 
 <details>
 <summary>
@@ -248,6 +240,8 @@ Add this block of code to the create_comment function inside `dnas/blog/zomes/co
 ```
 
 </details>
+
+The next step is to create a `get_comments_for_post` zome function that returns all the links for a post_hash. This function is called from `CommentsForPost.svelte`.
 
 <details>
 <summary>
@@ -271,9 +265,9 @@ Don't forget to restart your app after changing zome code.
 
 Similarly to updating posts, updating a comment will add a new action and its corresponding entry to the DHT. However once again, these changes will not be reflected in the agent's window UI.
 
-We could resolve this issue the same way we did with the posts; by creating a link from the create action to each new update action, however, there is another solution that we can use instead.
+We could resolve this issue the same way we did with the posts; by creating a link from the create action to each new update action, however, there is another solution that we can use instead. This architecture reduces the space used in the DHT as it doesn't have one link per update, but increases the time to retrieve the most recent record.
 
-Navigate to `CommentDetail.svelte` and modify the `fetchComment` function to call `get_latest_comment` instead of `get_original_comment`
+** Navigate to `CommentDetail.svelte` and modify the `fetchComment` function to call `get_latest_comment` instead of `get_original_comment` **
 
 Navigate to `comment.rs` and paste in the following zome function
 
@@ -298,7 +292,7 @@ pub fn get_latest_comment(original_comment_hash: ActionHash) -> ExternResult<Opt
 
 Its important to understand that each entry and action sits inside of a record, which also hold meta information about about the pair, as well as any deletes and updates associated with it.
 
-When we call `get_latest_comment` from the client, it retrieves the record details for this action, grabs most recent update action, and recursively calls the function again with this retrieved action's hash as the parameter. It keeps doing this until it can't find a new update (meaning that the current update is the latest), and then returns the record for this update.
+When we call `get_latest_comment` from the client, it retrieves the record details for the original action, grabs the most recent update action, and recursively calls the function again with this retrieved action's hash as the parameter. It keeps doing this until it can't find a new update (meaning that the current update is the latest), and then returns the record for this update.
 
 The upside of using this method for update retrieval is that it requires less storage to be used on the DHT, as no extra links need to be created. However the recursive nature of this method can make it take longer to retrieve information if there is a long chain of updates spread around the DHT. 
 
@@ -344,7 +338,5 @@ pub fn delete_comment(original_comment_hash: ActionHash) -> ExternResult<ActionH
 }
 
 ```
-
-How is this zome function different to the `delete_post`?
 
 Well done! You made it to the end.
