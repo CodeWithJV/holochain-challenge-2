@@ -56,14 +56,13 @@ Navigate to `dnas/blog/zomes/coordinator/blog/src/post.rs` and paste the followi
     )?;
 ```
 
-The addition of these lines of code will create a link from an arbitrary 'point' on the DHT to the post. This point is called a collection and will help us retrieve all of the posts in the app from a single location.
+The addition of these lines of code will create a link from an arbitrary address on the DHT to the post. The address is  derived from the string "all posts" and is a functional way to implement a collection so agents can retrieve all of the posts in the app from a single location.
 
-Restart the Holochain app, and open the playground
-
-You should see a couple of things when you create a new post
+Restart the Holochain app, open the playground, and create a few posts.
 
 - As usual, the action and entry will appear in the agent's source chain, but there will also be a new **createLink** action
 - Inside the dht-entries panel you will also see a link has been created that points from the new anchor (labled as **Unknown**) to the create action.
+- If you click on the links in the source chain you will see the base_address is the same (derived from "all posts") and the target address is differnt (the address of the post)
 
 #### 4. Get all posts
 
